@@ -1,0 +1,14 @@
+FROM node:14-slim
+
+RUN apt-get update  && apt-get install -y git bash openssl libstdc++6 python2.7 make gcc build-essential && \
+    ln -s /usr/bin/python2.7 /usr/bin/python && \
+    npm cache clean --force &&\
+    npm update &&\
+    npm install -g eslint &&\
+    npm install -g @vue/cli  &&\
+    npm install -g http-server 
+
+EXPOSE 9021
+
+WORKDIR /home/vue
+
