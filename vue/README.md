@@ -1,22 +1,10 @@
 # Vue Application
 
-First, create a network to connect all the required containers:
+First follow the instructions from the [root](https://github.com/amasrie/draw_flow) directory, then access the Vue container:
 
 ```sh
-docker network create ast_nodes
-```
-
-Run the following command from this folder to create a Node.js Docker image with Vue CLI:
-
-```sh
-docker build -t vue .
-```
-
-Crate a Docker container for the Vue.js application and execute the container:
-
-```sh
-docker run -dit --name vue_app -p 9200:9021 --network ast_nodes -v "$PWD:/home/vue" vue
-docker exec -it vue_app bash
+docker start vue
+docker exec -it vue bash
 ```
 
 ## Project setup

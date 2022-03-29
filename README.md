@@ -1,30 +1,18 @@
-First, create a network to connect all the required containers:
+# Draw Flow
+
+## Set Docker environment
+
+Run the following commands to create the Docker images for Vue and Go respectively:
 
 ```sh
-docker network create ast_nodes
+docker build -t vue -f Dockerfile_vue .
+docker build -t go -f Dockerfile_go .
 ```
 
-Run the following command from this folder to create a Node.js Docker image with Vue CLI:
+After that, just run the doccker-compose file:
 
 ```sh
-docker build -t vue .
+docker-compose -f docker-compose.yml up
 ```
 
-Crate a Docker container for the Vue.js application and execute the container:
-
-```sh
-docker run -dit --name vue_app -p 9200:9021 --network ast_nodes -v "$PWD:/home/vue" vue
-docker exec -it vue_app bash
-```
-
-
-docker run -dit --name go_app -p 9201:9021 --network ast_nodes -v "$PWD:/go/src" go
-docker exec -it go_app sh
-
-go run .
-
-
-docker run -it dgraph/dgraph:latest dgraph
-
-
-
+Then click [here](https://github.com/amasrie/draw_flow/tree/master/go) and [here](https://github.com/amasrie/draw_flow/tree/master/vue) in order to proceed with app setup for Go and Vue apps respectively.

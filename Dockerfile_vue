@@ -5,7 +5,7 @@ RUN apt-get update  && apt-get install -y git bash openssl libstdc++6 python2.7 
     npm cache clean --force &&\
     npm update &&\
     npm install -g eslint &&\
-    npm install -g @vue/cli  &&\
+    npm install -g @vue/cli &&\
     npm install -g http-server 
 
 EXPOSE 9021

@@ -1,0 +1,62 @@
+version: "3.7"
+services:
+    zero:
+        image: dgraph/dgraph:v20.03.3
+        container_name: zero
+        volumes:
+            - type: volume
+              source: dgraph
+              target: /dgraph
+              volume:
+                  nocopy: true
+        ports:
+            - 5080:5080
+            - 6080:6080
+        restart: on-failure
+        command: dgraph zero --my=zero:5080
+    alpha:
+        image: dgraph/dgraph:v20.03.3
+        container_name: alpha
+        depends_on:
+            - zero
+        volumes:
+            - type: volume
+              source: dgraph
+              target: /dgraph
+              volume:
+                  nocopy: true
+        ports:
+          - 8080:8080
+          - 9080:9080
+        restart: on-failure
+        command: dgraph alpha --my=alpha:7080 --lru_mb=4096 --zero=zero:5080
+    go:
+        build:
+            dockerfile: Dockerfile_go
+            context: .
+        container_name: go
+        image: go
+        volumes:
+            - ./go:/go/src
+        depends_on:
+            - zero
+            - alpha
+        ports:
+          - 9020:9020
+        command: go run .
+    vue:
+        build:
+            dockerfile: Dockerfile_vue
+            context: .
+        container_name: vue
+        image: vue
+        volumes:
+            - ./vue:/home/vue
+        depends_on:
+            - go
+        ports:
+          - 9021:9021
+        command: bash -c "npm install && npm run serve"
+volumes:
+    dgraph:
+    
