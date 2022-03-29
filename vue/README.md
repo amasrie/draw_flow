@@ -1,10 +1,11 @@
 # Vue Application
 
-First follow the instructions from the [root](https://github.com/amasrie/draw_flow) directory, then access the Vue container:
+If you want to create an isolated Vue container, follow these instructions:
 
 ```sh
-docker start vue
-docker exec -it vue bash
+docker run -dit --name vue_app -p 9021:9021 -v "$PWD:/home/vue" vue
+docker start vue_app
+docker exec -it vue_app bash
 ```
 
 ## Project setup
@@ -17,7 +18,7 @@ npm install
 npm run serve
 ```
 
-After that, the application could be accessed from `localhost:9200`
+After that, the application could be accessed from `localhost:9021`
 
 ### Compiles and minifies for production
 ```

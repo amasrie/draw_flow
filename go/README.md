@@ -1,10 +1,12 @@
 # Go Application
 
-First follow the instructions from the [root](https://github.com/amasrie/draw_flow), then access the Go container:
+If you want to create an isolated Go container, follow these instructions:
+
 
 ```sh
-docker start go
-docker exec -it go sh
+docker run -dit --name go_app -p 9020:9020 -v "$PWD:/go/src" go 
+docker start go_app
+docker exec -it go_app sh
 ```
 
 ## Project setup
