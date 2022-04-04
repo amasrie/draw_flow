@@ -8,7 +8,7 @@
 
 .drawflow .drawflow-node.selected {
     background: #181818;
-    border: 2px solid rgb(250, 0, 175);
+    border: 2px solid rgb(78, 123, 207);
 }
 
 .drawflow .drawflow-node .input, .drawflow .drawflow-node .output {
@@ -30,7 +30,7 @@
 
 .drawflow .drawflow-node .output:hover, .drawflow .drawflow-node .input:hover {
     background: #494949;
-    border: 3px solid rgb(250, 0, 175);
+    border: 3px solid rgb(78, 123, 207);
 }
 
 .drawflow .connection .main-path {
@@ -39,7 +39,7 @@
 }
 
 .drawflow .connection .main-path:hover {
-    stroke: rgb(250, 0, 175);
+    stroke: rgb(78, 123, 207);
 }
 
 .parent-node .drawflow-delete {
@@ -47,7 +47,7 @@
 }
 
 .drawflow .drawflow-node.selected .drawflow_content_node .header {
-    background:rgb(250, 0, 175);
+    background:rgb(78, 123, 207);
 }
 
 
@@ -57,4 +57,18 @@
 
 .el-drawer__body {
     color: black;
+}
+
+.el-input-number {
+    width: 100%;
+}
+
+.el-icon-plus {
+    content: url(https://www.svgrepo.com/show/99205/plus-symbol-button.svg);
+    height: 10px;
+}
+
+.el-icon-minus {
+    content: url(https://www.svgrepo.com/show/44062/minus.svg);
+    height: 10px;
 }

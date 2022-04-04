@@ -43,7 +43,7 @@ import style from '../assets/style.css'
 import { onMounted, shallowRef, h, getCurrentInstance, render, readonly, ref } from 'vue'
 import Node1 from './nodes/node1.vue'
 import Node2 from './nodes/node2.vue'
-import Node3 from './nodes/node3.vue'
+import NodeNumbers from './nodes/nodeNumbers.vue'
 
 
 
@@ -66,11 +66,11 @@ export default {
             output:2
         },
          {
-            name: 'console.log',
+            name: 'Number',
             color: '#ff9900',
-            item: 'Node3',
-            input:1,
-            output:0
+            item: 'NodeNumbers',
+            input:0,
+            output:1
         },
     ])
    
@@ -142,7 +142,7 @@ export default {
        
        editor.value.registerNode('Node1', Node1, {}, {});
        editor.value.registerNode('Node2', Node2, {}, {});
-       editor.value.registerNode('Node3', Node3, {}, {});
+       editor.value.registerNode('NodeNumbers', NodeNumbers, {}, {});
 
        editor.value.import({"drawflow":{"Home":{"data":{"5":{"id":5,"name":"Node2","data":{"script":"(req,res) => {\n console.log(req);\n}"},"class":"Node2","html":"Node2","typenode":"vue","inputs":{"input_1":{"connections":[{"node":"6","input":"output_1"}]}},"outputs":{"output_1":{"connections":[]},"output_2":{"connections":[]}},"pos_x":1000,"pos_y":117},"6":{"id":6,"name":"Node1","data":{"url":"localhost/add", "method": "post"},"class":"Node1","html":"Node1","typenode":"vue","inputs":{},"outputs":{"output_1":{"connections":[{"node":"5","output":"input_1"}]}},"pos_x":137,"pos_y":89}}}}})
   })
