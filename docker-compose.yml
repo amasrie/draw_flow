@@ -1,4 +1,4 @@
-version: "3.7"
+version: "3.3"
 services:
     zero:
         image: dgraph/dgraph:v20.03.3
@@ -26,7 +26,7 @@ services:
               volume:
                   nocopy: true
         ports:
-          - 8080:8080
+          - 8081:8081
           - 9080:9080
         restart: on-failure
         command: dgraph alpha --my=alpha:7080 --lru_mb=4096 --zero=zero:5080
@@ -55,8 +55,9 @@ services:
         depends_on:
             - go
         ports:
-          - 9021:9021
-        command: bash -c "npm install && npm run serve"
+          - 9501:9501
+          - 9601:9601
+        command: bash -c "npm install && npm run dev"
 volumes:
     dgraph:
     
