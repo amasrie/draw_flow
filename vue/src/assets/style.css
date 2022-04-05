@@ -72,3 +72,22 @@
     content: url(https://www.svgrepo.com/show/44062/minus.svg);
     height: 10px;
 }
+
+.el-icon-arrow-up {
+    content: url(https://www.svgrepo.com/show/350444/arrow-up.svg);
+    height: 10px;
+}
+
+.el-icon-arrow-down {
+    content: url(https://www.svgrepo.com/show/304563/arrow-down.svg);
+    height: 10px;
+}
+
+.el-icon-close {
+    content: url(https://www.svgrepo.com/show/305186/close.svg);
+    height: 10px;
+}
+
+.inputError {
+    color: red;
+}
