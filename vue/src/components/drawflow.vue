@@ -45,8 +45,8 @@ import NodeNumber from './nodes/nodeNumber.vue'
 import NodeBoolean from './nodes/nodeBoolean.vue'
 import NodeVariable from './nodes/nodeVariable.vue'
 import NodeArithmetic from './nodes/nodeArithmetic.vue'
-
-
+import NodeComparison from './nodes/nodeComparison.vue'
+import NodeLogical from './nodes/nodeLogical.vue'
 
 export default {
   name: 'drawflow',
@@ -83,14 +83,14 @@ export default {
         {
             name: 'Comparison Operator',
             color: '#4c4c4c',
-            item: 'NodeBoolean',
+            item: 'NodeComparison',
             input:2,
             output:1
         },
         {
             name: 'Logical Operator',
             color: '#4c4c4c',
-            item: 'NodeBoolean',
+            item: 'NodeLogical',
             input:2,
             output:1
         },
@@ -194,6 +194,8 @@ export default {
        editor.value.registerNode('NodeBoolean', NodeBoolean, {}, {});
        editor.value.registerNode('NodeVariable', NodeVariable, {}, {});
        editor.value.registerNode('NodeArithmetic', NodeArithmetic, {}, {});
+       editor.value.registerNode('NodeComparison', NodeComparison, {}, {});
+       editor.value.registerNode('NodeLogical', NodeLogical, {}, {});
 
        editor.value.on('nodeDataChanged', (id) => {
 			let checkedNode = editor.value.getNodeFromId(id);
@@ -207,8 +209,8 @@ export default {
 				}
 			}
 
-			if (checkedNode.name == 'NodeArithmetic') {
-				if (checkedNode.data.data.element == '- ') {
+			if (checkedNode.name == 'NodeArithmetic' || checkedNode.name == 'NodeLogical') {
+				if (checkedNode.data.data.element == '- ' || checkedNode.data.data.element == ' NOT ') {
 					if (count > 1) {
 						editor.value.removeNodeInput(id, lastKey);
 					}
@@ -224,7 +226,10 @@ export default {
 			let output = editor.value.getNodeFromId(link.output_id);
 			let input = editor.value.getNodeFromId(link.input_id);
 			if ( input.inputs[link.input_class].connections.length > 1 || output.outputs[link.output_class].connections.length > 1 ||
-				input.name == 'NodeArithmetic' && output.name != 'NodeVariable' && output.name != 'NodeNumber' && output.name != 'NodeArithmetic') {
+				(input.name == 'NodeLogical' && output.name != 'NodeVariable' && output.name != 'NodeBoolean' 
+					&& output.name != 'NodeComparison' && output.name != 'NodeLogical') ||
+				(input.name == 'NodeComparison' && output.name != 'NodeVariable' && output.name != 'NodeNumber' && output.name != 'NodeArithmetic') ||
+				(input.name == 'NodeArithmetic' && output.name != 'NodeVariable' && output.name != 'NodeNumber' && output.name != 'NodeArithmetic')) {
 				editor.value.removeSingleConnection(link.output_id, link.input_id, link.output_class, link.input_class)
 			}
        });
