@@ -47,6 +47,10 @@ import NodeVariable from './nodes/nodeVariable.vue'
 import NodeArithmetic from './nodes/nodeArithmetic.vue'
 import NodeComparison from './nodes/nodeComparison.vue'
 import NodeLogical from './nodes/nodeLogical.vue'
+import NodeAssign from './nodes/nodeAssign.vue'
+import NodePrint from './nodes/nodePrint.vue'
+import NodeConditional from './nodes/nodeConditional.vue'
+import NodeLoop from './nodes/nodeLoop.vue'
 
 export default {
   name: 'drawflow',
@@ -97,29 +101,29 @@ export default {
         {
             name: 'Assign',
             color: '#4c4c4c',
-            item: 'NodeBoolean',
-            input:2,
+            item: 'NodeAssign',
+            input:3,
             output:1
         },
         {
             name: 'Print',
             color: '#4c4c4c',
-            item: 'NodeBoolean',
-            input:1,
+            item: 'NodePrint',
+            input:2,
             output:1
         },
         {
             name: 'Conditional',
             color: '#4c4c4c',
-            item: 'NodeBoolean',
-            input:1,
+            item: 'NodeConditional',
+            input:2,
             output:3
         },
         {
             name: 'Loop',
             color: '#4c4c4c',
-            item: 'NodeBoolean',
-            input:3,
+            item: 'NodeLoop',
+            input:4,
             output:2
         },
     ])
@@ -196,6 +200,10 @@ export default {
        editor.value.registerNode('NodeArithmetic', NodeArithmetic, {}, {});
        editor.value.registerNode('NodeComparison', NodeComparison, {}, {});
        editor.value.registerNode('NodeLogical', NodeLogical, {}, {});
+       editor.value.registerNode('NodeAssign', NodeAssign, {}, {});
+       editor.value.registerNode('NodePrint', NodePrint, {}, {});
+       editor.value.registerNode('NodeConditional', NodeConditional, {}, {});
+       editor.value.registerNode('NodeLoop', NodeLoop, {}, {});
 
        editor.value.on('nodeDataChanged', (id) => {
 			let checkedNode = editor.value.getNodeFromId(id);
@@ -209,8 +217,8 @@ export default {
 				}
 			}
 
-			if (checkedNode.name == 'NodeArithmetic' || checkedNode.name == 'NodeLogical') {
-				if (checkedNode.data.data.element == '- ' || checkedNode.data.data.element == ' NOT ') {
+			if (checkedNode.name == 'NodeArithmetic' || checkedNode.name == 'NodeLogical' || checkedNode.name == 'NodeConditional') {
+				if (checkedNode.data.element == '- ' || checkedNode.data.element == ' not ' || checkedNode.data.element == 'else') {
 					if (count > 1) {
 						editor.value.removeNodeInput(id, lastKey);
 					}
@@ -225,11 +233,69 @@ export default {
        editor.value.on('connectionCreated', (link) => {
 			let output = editor.value.getNodeFromId(link.output_id);
 			let input = editor.value.getNodeFromId(link.input_id);
-			if ( input.inputs[link.input_class].connections.length > 1 || output.outputs[link.output_class].connections.length > 1 ||
+
+			let visitedNodes = [];
+			let gotCycles = (node) => {
+				let id = node.id;
+				if (visitedNodes.includes(id)) {
+					return true;
+				}
+				visitedNodes.push(id);
+				if (node.outputs.output_1.connections.length > 0) {
+					let nextNodeId = node.outputs.output_1.connections[0].node;
+					let nextNode = editor.value.getNodeFromId(nextNodeId);
+					return gotCycles(nextNode);
+				} else {
+					return false;
+				}
+			}
+
+			if (
+
+				// Nodes can't have more than a connection
+				input.inputs[link.input_class].connections.length > 1 || output.outputs[link.output_class].connections.length > 1 ||
+
+				// Assign, print, conditional and loop first input may only connect to assign, print, conditional or loop
+				((input.name == 'NodeAssign' || input.name == 'NodePrint' || input.name == 'NodeConditional' || input.name == 'NodeLoop') && 
+					link.input_class == 'input_1' && output.name != 'NodeAssign' && output.name != 'NodePrint' && 
+					output.name != 'NodeConditional' && output.name != 'NodeLoop') ||
+
+				// Assign and loop second input must be a variable
+				((input.name == 'NodeAssign' || input.name == 'NodeLoop') && link.input_class == 'input_2' && output.name != 'NodeVariable') ||
+
+				// Assign third input must be a numerical or boolean expression, or a variable
+				(input.name == 'NodeAssign' && link.input_class == 'input_3' && output.name != 'NodeBoolean' && 
+					output.name != 'NodeNumber' && output.name != 'NodeVariable' && output.name != 'NodeArithmetic' && 
+					output.name != 'NodeComparison' && output.name != 'NodeLogical') ||
+
+				// Print second input must be a numerical or boolean expression, or a variable
+				(input.name == 'NodePrint' && link.input_class == 'input_2' && output.name != 'NodeBoolean' && 
+					output.name != 'NodeNumber' && output.name != 'NodeVariable' && output.name != 'NodeArithmetic' && 
+					output.name != 'NodeComparison' && output.name != 'NodeLogical') ||
+
+				// Conditional second input must be a boolean expression or a variable
+				(input.name == 'NodeConditional' && link.input_class == 'input_2' && output.name != 'NodeBoolean' && 
+					output.name != 'NodeVariable' && output.name != 'NodeComparison' && output.name != 'NodeLogical') ||
+
+				// Loop third and fourth inputs must be numeric expression or a variable
+				(input.name == 'NodeLoop' && (link.input_class == 'input_3' || link.input_class == 'input_4') && 
+					output.name != 'NodeNumber' && output.name != 'NodeVariable' && output.name != 'NodeArithmetic') ||
+
+				// Logical operators must have boolean, variables, comparison or logical operators as input
 				(input.name == 'NodeLogical' && output.name != 'NodeVariable' && output.name != 'NodeBoolean' 
 					&& output.name != 'NodeComparison' && output.name != 'NodeLogical') ||
+
+				// Comparison operators must have variables, numbers or arithmetic operators as input
 				(input.name == 'NodeComparison' && output.name != 'NodeVariable' && output.name != 'NodeNumber' && output.name != 'NodeArithmetic') ||
-				(input.name == 'NodeArithmetic' && output.name != 'NodeVariable' && output.name != 'NodeNumber' && output.name != 'NodeArithmetic')) {
+
+				// Arithmetic operators must have variables, numbers or other arithmetic operators as input
+				(input.name == 'NodeArithmetic' && output.name != 'NodeVariable' && output.name != 'NodeNumber' && output.name != 'NodeArithmetic') ||
+
+				// The new connection must not create a cycle
+				((input.name == 'NodeAssign' || input.name == 'NodePrint' || input.name == 'NodeConditional' || input.name == 'NodeLoop' ||
+					input.name == 'NodeLogical' || input.name == 'NodeArithmetic') && gotCycles(output))
+
+			) {
 				editor.value.removeSingleConnection(link.output_id, link.input_id, link.output_class, link.input_class)
 			}
        });

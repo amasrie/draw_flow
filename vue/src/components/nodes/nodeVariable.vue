@@ -21,6 +21,12 @@ export default defineComponent({
         const variable = ref("");
         const dataNode = ref({});
 		const regExp = /^[a-zA-Z_][a-zA-Z_0-9]*$/;
+		const reserved = [
+			'False', 'None', 'True', '__peg_parser__', 'and', 'assert', 'as', 'async', 'await',
+			'break', 'class', 'continue', 'def', 'del', 'elif', 'else', 'except', 'finally',
+			'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda', 'nonlocal',
+			'not', 'or', 'pass', 'raise', 'return', 'try', 'while', 'with', 'yield', 'print', 'exec'
+		]
 		let hasError = true;
         
         df = getCurrentInstance().appContext.config.globalProperties.$df.value;
@@ -28,8 +34,8 @@ export default defineComponent({
         const updateSelect = (value) => {
 			el.value.children[1].children[0].classList.value = el.value.children[1].children[0].classList.value.replace(' inputError', ''); 
             dataNode.value.data.element = value;
-            df.updateNodeDataFromId(nodeId.value, dataNode.value);
-			hasError = !regExp.test(variable.value);
+            df.updateNodeDataFromId(nodeId.value, dataNode.value.data);
+			hasError = !regExp.test(variable.value) || reserved.includes(variable.value);
 			el.value.children[1].children[0].classList.value += hasError ? ' inputError' : '';
         }
 

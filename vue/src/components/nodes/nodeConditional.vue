@@ -1,11 +1,11 @@
 <template>
     <div ref="el">
-        <nodeHeader  title="Arithmetic Operator"/>
-        <el-select v-model="operator" placeholder="Select operator" @change="updateSelect" size="small" df-operator>
+        <nodeHeader  title="Conditional"/>
+        <el-select v-model="condition" placeholder="Select condition" @change="updateSelect" size="small" df-condition>
 		    <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"></el-option>
 	    </el-select>
 
-    <br><br>
+    <br><br><br><br>
     </div>
 </template>
 
@@ -21,40 +21,20 @@ export default defineComponent({
         const el = ref(null);
         const nodeId = ref(0);
         let df = null
-        const operator = ref(' + ');
+        const condition = ref('if');
         const dataNode = ref({});
         const options = readonly([
             {
-                value: ' + ',
-                label: 'Add'
+                value: 'if',
+                label: 'First condition'
             },
             {
-                value: '- ',
-                label: 'Negative'
+                value: 'elif',
+                label: 'Next condition'
             },
             {
-                value: ' - ',
-                label: 'Subtract'
-            },
-            {
-                value: ' * ',
-                label: 'Multiply'
-            },
-            {
-                value: ' / ',
-                label: 'Divide'
-            },
-            {
-                value: ' // ',
-                label: 'Divide (Rounded)'
-            },
-            {
-                value: ' % ',
-                label: 'Modulo'
-            },
-            {
-                value: ' ** ',
-                label: 'Exponent'
+                value: 'else',
+                label: 'Otherwise'
             },
         ]);
         
@@ -64,19 +44,19 @@ export default defineComponent({
             dataNode.value.data.element = value;
             df.updateNodeDataFromId(nodeId.value, dataNode.value.data);
 			df.dispatch('nodeDataChanged', nodeId.value );
-			operator.value = value;
+			condition.value = value;
         }
 
         onMounted(async () => {
             await nextTick()
             nodeId.value = el.value.parentElement.parentElement.id.slice(5)
             dataNode.value = df.getNodeFromId(nodeId.value)
-			dataNode.value.data.element = ' -';
+			dataNode.value.data.element = 'if';
             df.updateNodeDataFromId(nodeId.value, dataNode.value.data);
         });
 
         return {
-            el, operator, updateSelect, options
+            el, condition, updateSelect, options
         }
 
     }    

@@ -1,16 +1,12 @@
 <template>
     <div ref="el">
-        <nodeHeader  title="Logical Operator"/>
-        <el-select v-model="operator" placeholder="Select operator" @change="updateSelect" size="small" df-operator>
-		    <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"></el-option>
-	    </el-select>
-
-    <br><br>
+        <nodeHeader  title="Loop"/>
+    <br><br><br><br><br><br><br>
     </div>
 </template>
 
 <script>
-import { defineComponent, onMounted, getCurrentInstance, ref, nextTick, readonly } from 'vue'
+import { defineComponent, onMounted, getCurrentInstance, ref, nextTick } from 'vue'
 import nodeHeader from './nodeHeader.vue'
 
 export default defineComponent({
@@ -21,22 +17,8 @@ export default defineComponent({
         const el = ref(null);
         const nodeId = ref(0);
         let df = null
-        const operator = ref(' and ');
+        const condition = ref('for');
         const dataNode = ref({});
-        const options = readonly([
-            {
-                value: ' and ',
-                label: 'Conjunction'
-            },
-            {
-                value: ' or ',
-                label: 'Disjunction'
-            },
-            {
-                value: ' not ',
-                label: 'Negation'
-            },
-        ]);
         
         df = getCurrentInstance().appContext.config.globalProperties.$df.value;
 
@@ -44,19 +26,19 @@ export default defineComponent({
             dataNode.value.data.element = value;
             df.updateNodeDataFromId(nodeId.value, dataNode.value.data);
 			df.dispatch('nodeDataChanged', nodeId.value );
-			operator.value = value;
+			condition.value = value;
         }
 
         onMounted(async () => {
             await nextTick()
             nodeId.value = el.value.parentElement.parentElement.id.slice(5)
             dataNode.value = df.getNodeFromId(nodeId.value)
-			dataNode.value.data.element = ' and ';
+			dataNode.value.data.element = 'for';
             df.updateNodeDataFromId(nodeId.value, dataNode.value.data);
         });
 
         return {
-            el, operator, updateSelect, options
+            el, condition, updateSelect
         }
 
     }    

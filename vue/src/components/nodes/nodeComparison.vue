@@ -54,7 +54,7 @@ export default defineComponent({
 
         const updateSelect = (value) => {
             dataNode.value.data.element = value;
-            df.updateNodeDataFromId(nodeId.value, dataNode.value);
+            df.updateNodeDataFromId(nodeId.value, dataNode.value.data);
 			df.dispatch('nodeDataChanged', nodeId.value );
 			operator.value = value;
         }
@@ -63,8 +63,8 @@ export default defineComponent({
             await nextTick()
             nodeId.value = el.value.parentElement.parentElement.id.slice(5)
             dataNode.value = df.getNodeFromId(nodeId.value)
-			dataNode.value.data.element = ' -';
-            df.updateNodeDataFromId(nodeId.value, dataNode.value);
+			dataNode.value.data.element = ' == ';
+            df.updateNodeDataFromId(nodeId.value, dataNode.value.data);
         });
 
         return {

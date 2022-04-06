@@ -29,7 +29,7 @@ export default defineComponent({
 			if (!numbers.value) {
 				numbers.value = 0;
 			}
-            df.updateNodeDataFromId(nodeId.value, dataNode.value);
+            df.updateNodeDataFromId(nodeId.value, dataNode.value.data);
         }
 
         onMounted(async () => {
@@ -41,7 +41,7 @@ export default defineComponent({
 			if (!numbers.value) {
 				numbers.value = 0;
 				dataNode.value.data.element = 0;
-	            df.updateNodeDataFromId(nodeId.value, dataNode.value);
+	            df.updateNodeDataFromId(nodeId.value, dataNode.value.data);
 			}
         });
 
