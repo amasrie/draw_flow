@@ -107,7 +107,7 @@ This node allows to create a basic operation that takes boolean expressions and 
 	- A select input with the available unary and binary logical operations.
 * Inputs: 
 	- `input_1`: A boolean expression
-	- `input_2`: A boolean expression
+	- `input_2`: A boolean expression (hidden when a unary operator is selected)
 * Outputs: 
 	- `output_1`: Any boolean expression
 
@@ -142,7 +142,7 @@ This instruction node verifies if a condition is satisfied in order to execute a
 	- A select input with the types of conditions available (first condition, next condition or otherwise)
 * Inputs: 
 	- `input_1`: The previous instruction
-	- `input_2`: A boolean constant or expression that will be verified
+	- `input_2`: A boolean constant or expression that will be verified (hidden when else is selected)
 * Outputs: 
 	- `output_1`: The next external instruction (optional)
 	- `output_2`: The first instruction inside the condition block
