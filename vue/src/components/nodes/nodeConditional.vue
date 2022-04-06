@@ -1,11 +1,15 @@
 <template>
     <div ref="el">
-        <nodeHeader  title="Conditional"/>
+        <nodeHeader title="Conditional"/>
+		<el-tag size="small">Instruction</el-tag>
+		<el-tag size="small" class="tag_float">External Instruction</el-tag>
+		<br><br>
+		<el-tag size="small">Boolean</el-tag>
+		<el-tag size="small" class="tag_float">Internal Instruction</el-tag>
+		<br><br>
         <el-select v-model="condition" placeholder="Select condition" @change="updateSelect" size="small" df-condition>
 		    <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"></el-option>
 	    </el-select>
-
-    <br><br><br><br>
     </div>
 </template>
 

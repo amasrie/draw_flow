@@ -1,11 +1,15 @@
 <template>
     <div ref="el">
-        <nodeHeader  title="Logical Operator"/>
+        <nodeHeader title="Logical Operator"/>
+		<el-tag size="small">Boolean</el-tag>
+		<br>
+		<el-tag size="small" class="tag_float">Boolean</el-tag>
+		<br>
+		<el-tag size="small">Boolean</el-tag>
+		<br><br>
         <el-select v-model="operator" placeholder="Select operator" @change="updateSelect" size="small" df-operator>
 		    <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"></el-option>
 	    </el-select>
-
-    <br><br>
     </div>
 </template>
 

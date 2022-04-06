@@ -1,7 +1,11 @@
 <template>
     <div ref="el">
-        <nodeHeader  title="Print"/>
-	    <br><br><br>
+        <nodeHeader title="Print"/>
+		<el-tag size="small">Instruction</el-tag>
+		<el-tag size="small" class="tag_float">Instruction</el-tag>
+		<br><br>
+		<el-tag size="small">Any Expression</el-tag>
+		<br><br>
     </div>
 </template>
 

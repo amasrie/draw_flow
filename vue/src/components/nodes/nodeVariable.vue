@@ -1,8 +1,10 @@
 <template>
     <div ref="el">
-        <nodeHeader  title="Variable"/>
+        <nodeHeader title="Variable"/>
+		<el-tag size="small" class="tag_float">Anything</el-tag>
+		<br><br>
         <el-input v-model="variable" minlength="1" placeholder="Variable name" @change="updateSelect" size="small" df-variable></el-input>
-    <br><br>
+    	<br>
     </div>
 </template>
 
@@ -32,16 +34,16 @@ export default defineComponent({
         df = getCurrentInstance().appContext.config.globalProperties.$df.value;
 
         const updateSelect = (value) => {
-			el.value.children[1].children[0].classList.value = el.value.children[1].children[0].classList.value.replace(' inputError', ''); 
+			el.value.children[4].children[0].classList.value = el.value.children[4].children[0].classList.value.replace(' inputError', ''); 
             dataNode.value.data.element = value;
             df.updateNodeDataFromId(nodeId.value, dataNode.value.data);
 			hasError = !regExp.test(variable.value) || reserved.includes(variable.value);
-			el.value.children[1].children[0].classList.value += hasError ? ' inputError' : '';
+			el.value.children[4].children[0].classList.value += hasError ? ' inputError' : '';
         }
 
         onMounted(async () => {
             await nextTick()
-			el.value.children[1].children[0].classList.value += ' inputError';
+			el.value.children[4].children[0].classList.value += ' inputError';
             nodeId.value = el.value.parentElement.parentElement.id.slice(5)
             dataNode.value = df.getNodeFromId(nodeId.value)
             variable.value = dataNode.value.data.element;

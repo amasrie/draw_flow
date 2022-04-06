@@ -1,7 +1,18 @@
 <template>
     <div ref="el">
-        <nodeHeader  title="Loop"/>
-    <br><br><br><br><br><br><br>
+        <nodeHeader title="Loop"/>
+		<el-tag size="small">Instruction</el-tag>
+		<br>
+		<el-tag size="small" class="tag_float">External Instruction</el-tag>
+		<br>
+		<el-tag size="small">Variable</el-tag>
+		<br>
+		<el-tag size="small" class="tag_float">Internal Instruction</el-tag>
+		<br>
+		<el-tag size="small">Number</el-tag>
+		<br><br>
+		<el-tag size="small">Number</el-tag>
+		<br><br>
     </div>
 </template>
 

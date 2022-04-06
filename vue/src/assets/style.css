@@ -91,3 +91,7 @@
 .inputError {
     color: red;
 }
+
+.tag_float {
+    float: right;
+}

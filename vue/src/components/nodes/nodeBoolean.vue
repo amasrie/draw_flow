@@ -1,8 +1,10 @@
 <template>
     <div ref="el">
-        <nodeHeader  title="Boolean"/>
+        <nodeHeader title="Boolean"/>
+		<el-tag size="small" class="tag_float">Boolean</el-tag>
+		<br><br>
         <el-switch active-text="True" inactive-text="False" v-model="boolean" @change="updateSelect" df-boolean></el-switch>
-    <br><br>
+    	<br>
     </div>
 </template>
 

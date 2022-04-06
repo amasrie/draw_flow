@@ -1,8 +1,10 @@
 <template>
     <div ref="el">
-        <nodeHeader  title="Number"/>
+        <nodeHeader title="Number"/>
+		<el-tag size="small" class="tag_float">Number</el-tag>
+		<br><br>
         <el-input-number v-model="numbers" :precision="5" :step="0.1" placeholder="Numeric value" @change="updateSelect" size="small" df-numbers></el-input-number>
-    <br><br>
+	    <br>
     </div>
 </template>
 

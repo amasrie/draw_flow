@@ -117,7 +117,7 @@ export default {
             color: '#4c4c4c',
             item: 'NodeConditional',
             input:2,
-            output:3
+            output:2
         },
         {
             name: 'Loop',
