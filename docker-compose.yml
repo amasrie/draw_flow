@@ -43,7 +43,7 @@ services:
             - alpha
         ports:
           - 9020:9020
-        command: go run .
+        command: sh -c "go mod tidy && go run ."
     vue:
         build:
             dockerfile: Dockerfile_vue
