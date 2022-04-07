@@ -2,10 +2,10 @@
     <div ref="el">
         <nodeHeader title="Logical Operator"/>
 		<el-tag size="small">Boolean</el-tag>
-		<br>
+		<br v-show="isBinary">
 		<el-tag size="small" class="tag_float">Boolean</el-tag>
-		<br>
-		<el-tag size="small">Boolean</el-tag>
+		<br v-show="isBinary">
+		<el-tag v-show="isBinary" size="small">Boolean</el-tag>
 		<br><br>
         <el-select v-model="operator" placeholder="Select operator" @change="updateSelect" size="small" df-operator>
 		    <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"></el-option>
@@ -26,6 +26,7 @@ export default defineComponent({
         const nodeId = ref(0);
         let df = null
         const operator = ref(' and ');
+        const isBinary = ref(true);
         const dataNode = ref({});
         const options = readonly([
             {
@@ -49,6 +50,7 @@ export default defineComponent({
             df.updateNodeDataFromId(nodeId.value, dataNode.value.data);
 			df.dispatch('nodeDataChanged', nodeId.value );
 			operator.value = value;
+			isBinary.value = value ==' not ' ? false : true;
         }
 
         onMounted(async () => {
@@ -60,7 +62,7 @@ export default defineComponent({
         });
 
         return {
-            el, operator, updateSelect, options
+            el, operator, updateSelect, options, isBinary
         }
 
     }    

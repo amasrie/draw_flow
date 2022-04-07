@@ -1,12 +1,20 @@
 <template>
     <div ref="el">
         <nodeHeader title="Arithmetic Operator"/>
-		<el-tag size="small">Number</el-tag>
-		<br>
-		<el-tag size="small" class="tag_float">Number</el-tag>
-		<br>
-		<el-tag size="small">Number</el-tag>
-		<br><br>
+		<div v-show="isBinary">
+			<el-tag size="small">Number</el-tag>
+			<br>
+			<el-tag size="small" class="tag_float">Number</el-tag>
+			<br>
+			<el-tag size="small">Number</el-tag>
+			<br><br>
+		</div>
+		<div v-show="!isBinary">
+			<el-tag size="small">Number</el-tag>
+			<el-tag size="small" class="tag_float">Number</el-tag>
+			<br>
+			<br>
+		</div>
         <el-select v-model="operator" placeholder="Select operator" @change="updateSelect" size="small" df-operator>
 		    <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"></el-option>
 	    </el-select>
@@ -26,6 +34,7 @@ export default defineComponent({
         const nodeId = ref(0);
         let df = null
         const operator = ref(' + ');
+        const isBinary = ref(true);
         const dataNode = ref({});
         const options = readonly([
             {
@@ -69,6 +78,7 @@ export default defineComponent({
             df.updateNodeDataFromId(nodeId.value, dataNode.value.data);
 			df.dispatch('nodeDataChanged', nodeId.value );
 			operator.value = value;
+			isBinary.value = value =='- ' ? false : true;
         }
 
         onMounted(async () => {
@@ -80,7 +90,7 @@ export default defineComponent({
         });
 
         return {
-            el, operator, updateSelect, options
+            el, operator, updateSelect, options, isBinary
         }
 
     }    

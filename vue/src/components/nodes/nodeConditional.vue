@@ -1,10 +1,11 @@
 <template>
     <div ref="el">
         <nodeHeader title="Conditional"/>
+		<br>
 		<el-tag size="small">Instruction</el-tag>
 		<el-tag size="small" class="tag_float">External Instruction</el-tag>
 		<br><br>
-		<el-tag size="small">Boolean</el-tag>
+		<el-tag v-show="isBinary" size="small">Boolean</el-tag>
 		<el-tag size="small" class="tag_float">Internal Instruction</el-tag>
 		<br><br>
         <el-select v-model="condition" placeholder="Select condition" @change="updateSelect" size="small" df-condition>
@@ -26,6 +27,7 @@ export default defineComponent({
         const nodeId = ref(0);
         let df = null
         const condition = ref('if');
+        const isBinary = ref(true);
         const dataNode = ref({});
         const options = readonly([
             {
@@ -49,6 +51,7 @@ export default defineComponent({
             df.updateNodeDataFromId(nodeId.value, dataNode.value.data);
 			df.dispatch('nodeDataChanged', nodeId.value );
 			condition.value = value;
+			isBinary.value = value =='else' ? false : true;
         }
 
         onMounted(async () => {
@@ -60,7 +63,7 @@ export default defineComponent({
         });
 
         return {
-            el, condition, updateSelect, options
+            el, condition, updateSelect, options, isBinary
         }
 
     }    
