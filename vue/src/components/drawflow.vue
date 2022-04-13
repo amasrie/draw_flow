@@ -3,7 +3,7 @@
 <el-container>
   <el-header class="header">
       <h3>Programming Graph</h3>
-      <el-button type="primary"   @click="exportEditor">Export</el-button>
+      <el-button type="primary"   @click="exportEditor">Translate</el-button>
   </el-header>
   <el-container class="container">
     <el-aside width="200px" class="column">
@@ -20,10 +20,9 @@
 </el-container>
 <el-dialog
     v-model="dialogVisible"
-    title="Export"
+    title="Python code"
     width="50%"
   >
-    <span>Data:</span>
     <pre><code>{{dialogData}}</code></pre>
     <template #footer>
       <span class="dialog-footer">
@@ -136,8 +135,179 @@ export default {
    internalInstance.appContext.app._context.config.globalProperties.$df = editor;
    
     function exportEditor() {
-      dialogData.value = editor.value.export();
+      dialogData.value = translateNodes();
       dialogVisible.value = true;
+    }
+
+    /**
+    * This function verifies that the graph satisfies a sequence of code, wich means:
+    * 1. There must be one and only one instruction node (root node, the first instruction)
+    * this means, there's only one instruction node without input_1
+    * 2. Only instruction nodes may have their output_1 empty
+    */
+    function checkAllNodes() {
+      let rootInstruction = 0;
+      let list = editor.value.export().drawflow.Home.data;
+      for (let nodeName in list) {
+        let node = list[nodeName];
+        if (node.class != "NodeAssign" && node.class != "NodePrint"
+          && node.class != "NodeConditional" && node.class != "NodeLoop"
+        ) {
+          for (let input in node.inputs) {
+            if (node.inputs[input].connections.length != 1) {
+              return false;
+            }
+          }
+          for (let output in node.outputs) {
+            if (node.outputs[output].connections.length != 1) {
+              return false;
+            }
+          }
+        } else {
+          for (let input in node.inputs) {
+            if (input == "input_1" && node.inputs[input].connections.length != 1) {
+              rootInstruction++;
+            } else if (input != "input_1" && node.inputs[input].connections.length != 1) {
+              return false;
+            }
+          }
+          for (let output in node.outputs) {
+            if (output != "output_1" && node.outputs[output].connections.length != 1) {
+              return false;
+            }
+          }
+        }
+      }
+      return rootInstruction == 1;
+    }
+
+    /**
+    * This function returns the id of the root instruction
+    * Otherwise returns null
+    */
+    function getRootInstruction() {
+      let root = null;
+      let graph = editor.value.export().drawflow.Home.data;
+      for (let nodeName in graph) {
+        let node = graph[nodeName];
+        if (node.class == "NodeAssign" || node.class == "NodePrint"
+          || node.class == "NodeConditional" || node.class == "NodeLoop"
+        ) {
+          if (node.inputs.input_1.connections.length != 1) {
+            root = !root ? node.id: null;
+            break;
+          }
+        }
+      }
+      return root;
+    }
+
+    /**
+    * This function translates the graph into python code
+    * if previous validations are satisfied by taking the element of each node
+    * otherwise returns an empty string
+    */
+    function translateNodes() {
+      let translation = ""
+      let indentationLevel = 0;
+
+      // Translates a constant or variable
+      let getValue = (node) => {
+        return node.data.element;
+      }
+
+      // Translates an expression
+      let getExpression = (node) => {
+        let element = node.data.element;
+        let input1 = editor.value.getNodeFromId(node.inputs.input_1.connections[0].node);
+        if (element == '- ' || element == ' not ') {
+          return `${element} (${getNode(input1)})`;
+        } else {
+          let input2 = editor.value.getNodeFromId(node.inputs.input_2.connections[0].node);
+          return `(${getNode(input1)}) ${element} (${getNode(input2)})`;
+        }
+      }
+
+      // Add indentations to instructions
+      let getIndentations = () => {
+        let indents = "";
+        for (let i = 0; i < indentationLevel; i++) {
+          indents += "\t";
+        }
+        return indents;
+      }
+
+      // Translates an assign instruction
+      let getAssign = (node) => {
+        let element = node.data.element;
+        let assignVar = editor.value.getNodeFromId(node.inputs.input_2.connections[0].node);
+        let assignExpr = editor.value.getNodeFromId(node.inputs.input_3.connections[0].node);
+        let nextInstruction = node.outputs.output_1.connections.length > 0 ? getNode(editor.value.getNodeFromId(node.outputs.output_1.connections[0].node)) : "";
+        return `${getIndentations()}${getNode(assignVar)} ${element} ${getNode(assignExpr)}\n${nextInstruction}`;
+      }
+
+      // Translates a print instruction
+      let getPrint = (node) => {
+        let element = node.data.element;
+        let printExpr = editor.value.getNodeFromId(node.inputs.input_2.connections[0].node);
+        let nextInstruction = node.outputs.output_1.connections.length > 0 ? getNode(editor.value.getNodeFromId(node.outputs.output_1.connections[0].node)) : "";
+        return `${getIndentations()}${element}(${getNode(printExpr)})\n${nextInstruction}`;
+      }
+
+      // Translates a conditional instruction
+      let getConditional = (node) => {
+        let element = node.data.element;
+        let condExpr = element != 'else' ? getNode(editor.value.getNodeFromId(node.inputs.input_2.connections[0].node)) : "";
+        let outerInstruction = node.outputs.output_1.connections.length > 0 ? getNode(editor.value.getNodeFromId(node.outputs.output_1.connections[0].node)) : "";
+        let innerInstruction = editor.value.getNodeFromId(node.outputs.output_2.connections[0].node);
+        let text = `${getIndentations()}${element} ${condExpr}:\n`;
+        indentationLevel++;
+        text += `${getNode(innerInstruction)}`;
+        indentationLevel--;
+        text += `${outerInstruction}`;
+        return text;
+      }
+
+      // Translates a simple loop instruction
+      let getLoop = (node) => {
+        let element = node.data.element;
+        let outerInstruction = node.outputs.output_1.connections.length > 0 ? getNode(editor.value.getNodeFromId(node.outputs.output_1.connections[0].node)) : "";
+        let innerInstruction = editor.value.getNodeFromId(node.outputs.output_2.connections[0].node);
+        let loopVar = editor.value.getNodeFromId(node.inputs.input_2.connections[0].node);
+        let loopBegin = editor.value.getNodeFromId(node.inputs.input_3.connections[0].node);
+        let loopEnd = editor.value.getNodeFromId(node.inputs.input_4.connections[0].node);
+        let text = `${getIndentations()}${element} ${getNode(loopVar)} in range(${getNode(loopBegin)}, ${getNode(loopEnd)}):\n`;
+        indentationLevel++;
+        text += `${getNode(innerInstruction)}`;
+        indentationLevel--;
+        text += `${outerInstruction}`;
+        return text;
+      }
+
+      // Verifies de type of node in order to call the appropaite expression
+      let getNode = (node) => {
+        let nodeClass = node.class;
+        if (nodeClass == 'NodeVariable' || nodeClass == 'NodeBoolean' || nodeClass == 'NodeNumber') {
+          return getValue(node);
+        } else if (nodeClass == 'NodeArithmetic' || nodeClass == 'NodeComparison' || nodeClass == 'NodeLogical') {
+          return getExpression(node);
+        } else if (nodeClass == 'NodeAssign') {
+          return getAssign(node);
+        } else if (nodeClass == 'NodePrint') {
+          return getPrint(node);
+        } else if (nodeClass == 'NodeConditional') {
+          return getConditional(node);
+        } else if (nodeClass == 'NodeLoop') {
+          return getLoop(node);
+        }
+      }
+
+      if (checkAllNodes()) {
+        let nodeId = getRootInstruction();
+        let instruction = editor.value.getNodeFromId(nodeId);
+        translation = getNode(instruction);
+      }
+      return translation;
     }
 
     const drag = (ev) => {
@@ -194,6 +364,7 @@ export default {
        editor.value = new Drawflow(id, Vue, internalInstance.appContext.app._context);
        editor.value.start();
        
+       // Registering the available nodes
        editor.value.registerNode('NodeNumber', NodeNumber, {}, {});
        editor.value.registerNode('NodeBoolean', NodeBoolean, {}, {});
        editor.value.registerNode('NodeVariable', NodeVariable, {}, {});
@@ -205,6 +376,12 @@ export default {
        editor.value.registerNode('NodeConditional', NodeConditional, {}, {});
        editor.value.registerNode('NodeLoop', NodeLoop, {}, {});
 
+       /**
+       * This event is triggered every time a node information is updated
+       * For example, changing the arithmetic operator
+       * It will change the number of inputs depending on the selected operator 
+       * It will show one if the operator is unary and two if it's binary
+       */ 
        editor.value.on('nodeDataChanged', (id) => {
 			let checkedNode = editor.value.getNodeFromId(id);
 
@@ -230,11 +407,17 @@ export default {
 			}
        });
 
+       /**
+       * This event is triggered each time a new connection between two nodes is created
+       * Further instructions below
+       */ 
        editor.value.on('connectionCreated', (link) => {
 			let output = editor.value.getNodeFromId(link.output_id);
 			let input = editor.value.getNodeFromId(link.input_id);
 
 			let visitedNodes = [];
+            // this function detects if the new connection creates a cycle 
+            // that is, move from a node until reaching the same node
 			let gotCycles = (node) => {
 				let id = node.id;
 				if (visitedNodes.includes(id)) {
