@@ -21,7 +21,7 @@
 <el-dialog
     v-model="dialogVisible"
     title="Python code"
-    width="50%"
+    width="90%"
   >
     <pre><code>{{dialogData}}</code></pre>
     <template #footer>
@@ -205,10 +205,10 @@ export default {
     /**
     * This function translates the graph into python code
     * if previous validations are satisfied by taking the element of each node
-    * otherwise returns an empty string
+    * otherwise returns an error message
     */
     function translateNodes() {
-      let translation = ""
+      let translation = "Error: The graph must contain at least an instruction node (Print, Assign, Conditional or Loop).\nAll nodes must have their corresponding input connections except for the first input (root node exclusively).\nAll nodes must have their corresponding output connections except for the first output (optional exclusively for instructions)";
       let indentationLevel = 0;
 
       // Translates a constant or variable
