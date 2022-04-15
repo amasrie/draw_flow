@@ -3,7 +3,7 @@
 <el-container>
   <el-header class="header">
       <h3>Programming Graph</h3>
-      <el-button type="primary"   @click="exportEditor">Translate</el-button>
+      <el-button type="primary" @click="exportEditor">Translate</el-button>
   </el-header>
   <el-container class="container">
     <el-aside width="200px" class="column">
@@ -27,16 +27,28 @@
     <template #footer>
       <span class="dialog-footer">
         <el-button @click="dialogVisible = false">Cancel</el-button>
-        <el-button type="primary" @click="dialogVisible = false"
+        <el-button type="primary" @click="executeCode" v-bind="translatorDisabled"
           >Confirm</el-button
         >
       </span>
     </template>
   </el-dialog>
+<el-dialog
+    v-model="resultsVisible"
+    title="Execution results"
+    width="50%">
+    <pre><code>{{executionResults}}</code></pre>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="resultsVisible = false">Close</el-button>
+      </span>
+    </template>
+</el-dialog>
 </template>
 <script>
 
 import Drawflow from 'drawflow'
+import axios from 'axios';
 import styleDrawflow from 'drawflow/dist/drawflow.min.css'
 import style from '../assets/style.css' 
 import { onMounted, shallowRef, h, getCurrentInstance, render, readonly, ref } from 'vue'
@@ -127,8 +139,12 @@ export default {
         },
     ])
    
+   const HOST = `http://localhost:9020`;
+   const translatorDisabled = ref({disabled: "disabled"});
    const editor = shallowRef({})
    const dialogVisible = ref(false)
+   const resultsVisible = ref(false)
+   const executionResults = ref("");
    const dialogData = ref({})
    const Vue = { version: 3, h, render };
    const internalInstance = getCurrentInstance()
@@ -209,6 +225,7 @@ export default {
     */
     function translateNodes() {
       let translation = "Error: The graph must contain at least an instruction node (Print, Assign, Conditional or Loop).\nAll nodes must have their corresponding input connections except for the first input (root node exclusively).\nAll nodes must have their corresponding output connections except for the first output (optional exclusively for instructions)";
+      translatorDisabled.value = {disabled: "disabled"};
       let indentationLevel = 0;
 
       // Translates a constant or variable
@@ -306,9 +323,29 @@ export default {
         let nodeId = getRootInstruction();
         let instruction = editor.value.getNodeFromId(nodeId);
         translation = getNode(instruction);
+        translatorDisabled.value = {};
       }
       return translation;
     }
+
+    function executeCode() {
+      axios.post(`${HOST}/execute`, {
+        code : dialogData.value
+      }, 
+      {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+      ).then((resp) => {
+        console.log(resp);
+        resultsVisible.value = true;
+        executionResults.value = resp.data;
+      }).catch((err) => {
+        console.log(err);
+      })
+    }
+
 
     const drag = (ev) => {
       if (ev.type === "touchstart") {
@@ -486,7 +523,7 @@ export default {
        editor.value.import({"drawflow":{"Home":{"data":{}}}})})
 
   return {
-    exportEditor, listNodes, drag, drop, allowDrop, dialogVisible, dialogData
+    exportEditor, listNodes, drag, drop, allowDrop, dialogVisible, dialogData, executeCode, translatorDisabled, resultsVisible, executionResults
   }
 
   }

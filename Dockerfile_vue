@@ -8,7 +8,7 @@ RUN apt-get update  && apt-get install -y git bash openssl libstdc++6 python2.7 
     npm install -g @vue/cli &&\
     npm install -g http-server 
 
-EXPOSE 9021
+EXPOSE 9501
 
 WORKDIR /home/vue
 
