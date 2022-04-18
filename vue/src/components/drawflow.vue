@@ -3,6 +3,8 @@
 <el-container>
   <el-header class="header">
       <h3>Programming Graph</h3>
+      <el-button type="primary" @click="loadList">Load</el-button>
+      <el-button type="primary" @click="showInputSave">Save</el-button>
       <el-button type="primary" @click="exportEditor">Translate</el-button>
   </el-header>
   <el-container class="container">
@@ -18,21 +20,38 @@
     </el-main>
   </el-container>
 </el-container>
-<el-dialog
-    v-model="dialogVisible"
-    title="Python code"
-    width="90%"
-  >
-    <pre><code>{{dialogData}}</code></pre>
-    <template #footer>
-      <span class="dialog-footer">
-        <el-button @click="dialogVisible = false">Cancel</el-button>
-        <el-button type="primary" @click="executeCode" v-bind="translatorDisabled"
-          >Confirm</el-button
-        >
-      </span>
-    </template>
-  </el-dialog>
+
+<el-dialog v-model="showList" title="List of stored graphs" width="30%">
+  <span v-for='singleGraph in listGraph' :key='singleGraph.name'>
+    <el-button @click="loadElement(singleGraph.name)">{{ singleGraph.name }}</el-button>
+  </span>
+  <template #footer>
+    <span class="dialog-footer">
+      <el-button @click="showList = false">Cancel</el-button>
+    </span>
+  </template>
+</el-dialog>
+
+<el-dialog v-model="showInput" title="Save the graph" width="30%">
+  <el-input v-model="graphName" minlength="1" placeholder="Graph name" size="small"></el-input>
+  <template #footer>
+    <span class="dialog-footer">
+      <el-button @click="showInput = false">Cancel</el-button>
+      <el-button type="primary" @click="saveGraph">Save</el-button>
+    </span>
+  </template>
+</el-dialog>
+
+<el-dialog v-model="dialogVisible" title="Python code" width="90%">
+  <pre><code>{{dialogData}}</code></pre>
+  <template #footer>
+    <span class="dialog-footer">
+      <el-button @click="dialogVisible = false">Cancel</el-button>
+      <el-button type="primary" @click="executeCode" v-bind="translatorDisabled">Confirm</el-button>
+    </span>
+  </template>
+</el-dialog>
+
 <el-dialog
     v-model="resultsVisible"
     title="Execution results"
@@ -143,16 +162,93 @@ export default {
    const translatorDisabled = ref({disabled: "disabled"});
    const editor = shallowRef({})
    const dialogVisible = ref(false)
+   const showList = ref(false)
+   const showInput = ref(false)
+   const graphName = ref("")
    const resultsVisible = ref(false)
    const executionResults = ref("");
    const dialogData = ref({})
+   const listGraph = ref({});
    const Vue = { version: 3, h, render };
    const internalInstance = getCurrentInstance()
    internalInstance.appContext.app._context.config.globalProperties.$df = editor;
    
+    /**
+    * Shows the data from the graph as python code
+    */
     function exportEditor() {
       dialogData.value = translateNodes();
       dialogVisible.value = true;
+    }
+
+    /**
+    * Gets the list of stored graphs
+    */
+    function loadList() {
+      axios.get(`${HOST}/list`,
+      {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+      ).then((resp) => {
+        console.log(resp);
+        showList.value = true;
+        listGraph.value = resp;
+      }).catch((err) => {
+        console.log(err);
+        alert("The list is empty");
+      })
+    }
+
+    /**
+    * Gets the graph corresponding to a specified name
+    */
+    function loadElement(name) {
+      axios.get(`${HOST}/find?name=${name}`,
+      {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+      ).then((resp) => {
+        console.log(resp);
+        showList.value = false;
+        editor.value.import(JSON.parse(resp.data));
+      }).catch((err) => {
+        console.log(err);
+        alert("Graph not found");
+      })
+    }
+
+    /**
+    * Show a dialago with an input to store the graph with a name
+    */
+    function showInputSave() {
+      showInput.value = true;
+    }
+
+    /**
+    * Saves the graph
+    */
+    function saveGraph() {
+      axios.post(`${HOST}/save`, {
+        name: graphName.value,
+        code : JSON.stringify(editor.value.export())
+      }, 
+      {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+      ).then((resp) => {
+        console.log(resp);
+        showInput.value = false;
+        alert("The graph was successfully saved");
+      }).catch((err) => {
+        console.log(err);
+        alert("Couldn't save the graph");
+      })
     }
 
     /**
@@ -328,6 +424,9 @@ export default {
       return translation;
     }
 
+    /**
+    * Send to python code to a Go API REST to execute it and get their results
+    */
     function executeCode() {
       axios.post(`${HOST}/execute`, {
         code : dialogData.value
@@ -343,6 +442,7 @@ export default {
         executionResults.value = resp.data;
       }).catch((err) => {
         console.log(err);
+        alert("Couldn't execute the program");
       })
     }
 
@@ -523,7 +623,7 @@ export default {
        editor.value.import({"drawflow":{"Home":{"data":{}}}})})
 
   return {
-    exportEditor, listNodes, drag, drop, allowDrop, dialogVisible, dialogData, executeCode, translatorDisabled, resultsVisible, executionResults
+    exportEditor, listNodes, drag, drop, allowDrop, dialogVisible, showList, showInputSave, graphName, listGraph, dialogData, executeCode, saveGraph, translatorDisabled, resultsVisible, executionResults, showInput, loadElement, loadList
   }
 
   }
