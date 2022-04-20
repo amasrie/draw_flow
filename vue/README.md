@@ -32,6 +32,10 @@ npm run dev
 
 After that, the application could be accessed from `localhost:9501`
 
+### Dependencies
+
+To properly use this application, make sure the `HOST` variable in the `drawflow.vue` file is pointing to  your service.
+
 
 ## Programming Graph - Node Editor
 

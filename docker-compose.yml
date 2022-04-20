@@ -66,4 +66,6 @@ services:
         command: bash -c "npm install && npm run dev"
 volumes:
     dgraph:
+networks:
+    default:
     

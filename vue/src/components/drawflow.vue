@@ -193,8 +193,10 @@ export default {
       }
       ).then((resp) => {
         console.log(resp);
-        showList.value = true;
-        listGraph.value = resp;
+        if (resp.data.me.length > 0) {
+          showList.value = true;
+          listGraph.value = resp.data.me;
+        }
       }).catch((err) => {
         console.log(err);
         alert("The list is empty");
@@ -214,7 +216,7 @@ export default {
       ).then((resp) => {
         console.log(resp);
         showList.value = false;
-        editor.value.import(JSON.parse(resp.data));
+        editor.value.import(JSON.parse(resp.data.me[0].code));
       }).catch((err) => {
         console.log(err);
         alert("Graph not found");

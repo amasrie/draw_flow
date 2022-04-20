@@ -13,15 +13,16 @@ import (
     "github.com/dgraph-io/dgo/v210/protos/api"
 )
 
-const DGRAPH = "172.23.0.87:9080"
+const DGRAPH = "192.168.1.107:9080"
 
 type code_struct struct {
     Python string `json:"code"`
 }
 
-type graph_struct struct {
-    Name string `json:"name"`
-    Code string `json:"code"`
+type Python struct {
+    Uid string `json:"uid,omitempty"`
+    Name string `json:"name,omitempty"`
+    Code string `json:"code,omitempty"`
 }
 
 /**
@@ -56,11 +57,6 @@ func main() {
       MaxAge:           300,
     }))
   
-    route.Get("/", func(writer http.ResponseWriter, request *http.Request) {
-      writer.Header().Set("Content-Type", "text/plain")
-      writer.Write([]byte("Hello World!"))
-    })
-
     /**
     * Gets the list of the already stored graph of code
     */
@@ -72,13 +68,7 @@ func main() {
       if (connection != nil) {
         transaction := connection.NewTxn()
         // defer transaction.Discard(ctx)
-        query := `
-        {
-          getAll(func: has(Code)) {
-            Name
-          }
-        }
-        `
+        query := `{ me(func: has(code)) { name } }`
         resp , err := transaction.Query(ctx, query)
         if err != nil {
           log.Printf("An error occured while trying to get the list of stored graphs")
@@ -98,19 +88,11 @@ func main() {
       foundElement := []byte("")
       graphName := request.URL.Query().Get("name")
       ctx := context.Background()
-      var code code_struct
-      decoder := json.NewDecoder(request.Body)
-      decoder.DisallowUnknownFields()
-      err := decoder.Decode(&code)
-      if err != nil {
-        log.Printf("An error occured while decoding the request body")
-        writer.WriteHeader(http.StatusExpectationFailed)
-      }
       query := `
       {
         me(func: eq(name, "`+ graphName +`")) {
-          Name
-          Code
+          name
+          code
         }
       }
       `
@@ -135,14 +117,14 @@ func main() {
     route.Post("/save", func(writer http.ResponseWriter, request *http.Request) {
       writer.Header().Set("Content-Type", "text/plain")
       msg := "Changes saved successfully"
-      var code graph_struct
+      var code Python
       request.Body = http.MaxBytesReader(writer, request.Body, 1048576)
       decoder := json.NewDecoder(request.Body)
       decoder.DisallowUnknownFields()
       err := decoder.Decode(&code)
       if err != nil {
-        log.Printf("An error occured while decoding the request body")
         msg = "An error occured while decoding the request body"
+        log.Printf(msg)
         writer.WriteHeader(http.StatusExpectationFailed)
       }
       ctx := context.Background()
@@ -151,45 +133,36 @@ func main() {
         // transaction := connection.NewTxn()
         // defer transaction.Discard(ctx)
         if err := connection.Alter(ctx, &api.Operation{DropAll: true}); err != nil {
-          log.Printf("The drop all operation should have succeeded")
           msg = "The drop all operation should have succeeded"
+          log.Printf(msg)
           writer.WriteHeader(http.StatusExpectationFailed)
         }
-        op := &api.Operation{}
-        op.Schema = `
-          name: string .
-          code: string .`
+        op := &api.Operation{Schema: `
+          name: string @index(hash) @upsert .
+          code: string .
+        `}
         if err := connection.Alter(ctx, op); err != nil {
-          log.Printf("Error on operation")
           msg = "Error on operation"
-          writer.WriteHeader(http.StatusExpectationFailed)
-        }
-        m1 := `
-          _:n1 <name> "`+ code.Name +`" .
-        `
-        mu := &api.Mutation{
-          SetNquads: []byte(m1),
-          CommitNow: true,
-        }
-        if _, err := connection.NewTxn().Mutate(ctx, mu); err != nil {
-          log.Printf("Error while executing first mutation")
-          msg = "Error while executing first mutation"
+          log.Printf(msg)
           writer.WriteHeader(http.StatusExpectationFailed)
         }
         req := &api.Request{CommitNow: true}
         req.Query = `
-          query {
-            me(func: eq(name, "`+ code.Name +`")) {
-              v as uid
-            }
-          }
+        {
+          me(func: eq(name, "` + code.Name + `"))
+        }
         `
-        m2 := `uid(v) <code> "`+ code.Code +`" .`
-        mu.SetNquads = []byte(m2)
+        pb, err := json.Marshal(Python{Name: code.Name, Code: code.Code})
+        if err != nil {
+          msg = "Error on marshal operation"
+          log.Printf(msg)
+          writer.WriteHeader(http.StatusExpectationFailed)
+        }
+        mu := &api.Mutation{SetJson: pb}
         req.Mutations = []*api.Mutation{mu}
         if _, err := connection.NewTxn().Do(ctx, req); err != nil {
-          log.Printf("Error while executing second mutation")
-          msg = "Error while executing second mutation"
+          msg = "Error while executing mutation"
+          log.Printf(msg)
           writer.WriteHeader(http.StatusExpectationFailed)
         }
       }
